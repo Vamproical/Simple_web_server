@@ -14,7 +14,6 @@ import servlets.MirrorServlet;
  */
 public class Main {
     public static void main(String[] args) throws Exception {
-
         MirrorServlet mirrorServlet = new MirrorServlet();
 
         ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
