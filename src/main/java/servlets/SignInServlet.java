@@ -1,7 +1,8 @@
 package servlets;
 
-import accounts.AccountService;
-import accounts.UserProfile;
+import dbService.DBException;
+import dbService.DBService;
+import dbService.dataSets.UsersDataSet;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -9,10 +10,9 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 public class SignInServlet extends HttpServlet {
-    private final AccountService accountService;
 
-    public SignInServlet(AccountService accountService) {
-        this.accountService = accountService;
+    public SignInServlet() {
+
     }
 
     //get logged user profile
@@ -23,23 +23,31 @@ public class SignInServlet extends HttpServlet {
     public void doPost(HttpServletRequest request,
                        HttpServletResponse response) throws IOException {
         String login = request.getParameter("login");
-        String pass = request.getParameter("pass");
-        if (login == null) {
+        String password = request.getParameter("password");
+
+        if (login == null || password == null) {
             response.setContentType("text/html;charset=utf-8");
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return;
         }
-        UserProfile userProfile = accountService.getUserByLogin(login);
-        if (userProfile == null) {
-            response.setContentType("text/html;charset=utf-8");
-            response.getWriter().println("Unauthorized");
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return;
-        }
 
-        accountService.addSession(request.getSession().getId(), userProfile);
-        response.setContentType("text/html;charset=utf-8");
-        response.getWriter().println("Authorized: " + login);
-        response.setStatus(HttpServletResponse.SC_OK);
+        DBService dbService = new DBService("validate");
+        try {
+            UsersDataSet profile = dbService.getUserByName(login);
+
+            if (profile == null || !profile.getPass().equals(password)) {
+                response.setContentType("text/html;charset=utf-8");
+                response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                response.getWriter().println("Unauthorized");
+                return;
+            }
+
+            response.setContentType("text/html;charset=utf-8");
+            response.setStatus(HttpServletResponse.SC_OK);
+            response.getWriter().println("Authorized: " + profile.getName());
+
+        } catch (DBException e) {
+            e.printStackTrace();
+        }
     }
 }
