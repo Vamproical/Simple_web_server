@@ -1,6 +1,6 @@
 package main;
 
-
+import chat.WebSocketChatServlet;
 import org.eclipse.jetty.server.Handler;
 import org.eclipse.jetty.server.Server;
 import org.eclipse.jetty.server.handler.HandlerList;
@@ -21,6 +21,7 @@ public class Main {
     public static void main(String[] args) {
         try {
             ServletContextHandler context = new ServletContextHandler(ServletContextHandler.SESSIONS);
+            context.addServlet(new ServletHolder(new WebSocketChatServlet()), "/chat");
             context.addServlet(new ServletHolder(new SignUpServlet()), "/signup");
             context.addServlet(new ServletHolder(new SignInServlet()), "/signin");
 
@@ -30,7 +31,7 @@ public class Main {
             HandlerList handlers = new HandlerList();
             handlers.setHandlers(new Handler[]{resource_handler, context});
 
-            Server server = new Server(8080);
+            Server server = new Server(1309);
             server.setHandler(handlers);
 
             server.start();
